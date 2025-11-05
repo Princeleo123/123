@@ -1,67 +1,246 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Button Popup</title>
+    <title>PDLKT Inventory Management</title>
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-            position: relative;
-            overflow: hidden;
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #121212;
+            color: #f5f5f5;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
         }
-        img.main {
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            width: 300px;
+        
+        h1 {
+            color: #00b4d8;
+            margin-bottom: 5px;
         }
+        
+        h2 {
+            color: #aaa;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+        
+        .form-container,
+        .search-container {
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px auto;
+            width: 90%;
+            max-width: 700px;
+        }
+        
+        input,
         button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            font-size: 16px;
-            color: white;
-            background-color: #007bff;
+            padding: 10px;
+            margin: 5px;
             border: none;
             border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        input {
+            background-color: #2c2c2c;
+            color: #f5f5f5;
+            width: calc(33% - 10px);
+        }
+        
+        input:focus {
+            outline: 1px solid #00b4d8;
+        }
+        
+        button {
+            background-color: #00b4d8;
+            color: #fff;
+            font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
+        
         button:hover {
-            background-color: #0056b3;
+            background-color: #0077b6;
         }
-        .childhood {
-            position: absolute;
-            width: 120px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        
+        table {
+            margin: 20px auto;
+            width: 90%;
+            max-width: 900px;
+            border-collapse: collapse;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
         }
-        .child1 {
-            left: calc(40% - 160px); /* Adjusted distance from center */
-            top: 50%;
-            transform: translateY(-50%);
+        
+        th,
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #333333;
         }
-        .child2 {
-            left: calc(60% + 40px); /* Adjusted distance from center */
-            top: 50%;
-            transform: translateY(-50%);
+        
+        th {
+            background-color: #d80e00;
+            color: #000;
+            text-transform: uppercase;
+        }
+        
+        tr:hover {
+            background-color: #2a2a2a;
+        }
+        
+        @media (max-width: 600px) {
+            input {
+                width: 100%;
+            }
         }
     </style>
-    <script>
-        function showMessage() {
-            alert("I just want you to know that you make me feel like I matter. I appreciate everything that you do. I'm always thankful to have you hehe :>");
-        }
-    </script>
 </head>
+
 <body>
-    <img src="sds/bai/3607972e-8792-474f-8475-aec37f7e6a9b.jpg" alt="Main Image" class="main">
-    <button onclick="showMessage()">Click Me!</button>
-    <img src="sds/bai/5cfa2bcc-e647-469b-90c0-e9231765469a.jpg" alt="Childhood Picture 1" class="childhood child1">
-    <img src="sds/bai/1d60f5ba-59f7-492a-89e3-d00a0179376d.jpg" alt="Childhood Picture 2" class="childhood child2">
+    <h1>PDLKT Printing & Clothing Shop</h1>
+    <h2>Inventory Management System</h2>
+
+    <div class="form-container">
+        <input type="text" id="productName" placeholder="Product Name">
+        <input type="text" id="productCategory" placeholder="Category">
+        <input type="text" id="productColor" placeholder="Color">
+        <input type="text" id="productSize" placeholder="Size">
+        <input type="number" id="productPrice" placeholder="Price (₱)">
+        <input type="number" id="productQuantity" placeholder="Quantity">
+        <button onclick="addProduct()">Add</button>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchBox" placeholder="Search product..." onkeyup="searchProduct()">
+    </div>
+
+    <table id="productTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Color</th>
+                <th>Size</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem("products")) || [{
+            name: "Custom T-Shirt",
+            category: "Clothing",
+            color: "White",
+            size: "M",
+            price: 250,
+            quantity: 20
+        }, {
+            name: "Printed Hoodie",
+            category: "Clothing",
+            color: "Black",
+            size: "L",
+            price: 650,
+            quantity: 10
+        }, {
+            name: "Canvas Tote Bag",
+            category: "Accessory",
+            color: "Natural",
+            size: "Medium",
+            price: 120,
+            quantity: 15
+        }];
+
+        function displayProducts(list = products) {
+            const tableBody = document.querySelector("#productTable tbody");
+            tableBody.innerHTML = "";
+
+            list.forEach((p, index) => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${p.name}</td>
+                        <td>${p.category}</td>
+                        <td>${p.color}</td>
+                        <td>${p.size}</td>
+                        <td>₱${p.price}</td>
+                        <td>${p.quantity}</td>
+                        <td>
+                            <button onclick="editProduct(${index})">Edit</button>
+                            <button onclick="deleteProduct(${index})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addProduct() {
+            const name = document.getElementById("productName").value.trim();
+            const category = document.getElementById("productCategory").value.trim();
+            const color = document.getElementById("productColor").value.trim();
+            const size = document.getElementById("productSize").value.trim();
+            const price = document.getElementById("productPrice").value;
+            const quantity = document.getElementById("productQuantity").value;
+
+            if (!name || !category || !color || !size || !price || !quantity) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            products.push({
+                name,
+                category,
+                color,
+                size,
+                price: Number(price),
+                quantity: Number(quantity)
+            });
+            localStorage.setItem("products", JSON.stringify(products));
+            clearFields();
+            displayProducts();
+        }
+
+        function editProduct(index) {
+            const p = products[index];
+            document.getElementById("productName").value = p.name;
+            document.getElementById("productCategory").value = p.category;
+            document.getElementById("productColor").value = p.color;
+            document.getElementById("productSize").value = p.size;
+            document.getElementById("productPrice").value = p.price;
+            document.getElementById("productQuantity").value = p.quantity;
+            deleteProduct(index);
+        }
+
+        function deleteProduct(index) {
+            if (confirm("Delete this product?")) {
+                products.splice(index, 1);
+                localStorage.setItem("products", JSON.stringify(products));
+                displayProducts();
+            }
+        }
+
+        function searchProduct() {
+            const query = document.getElementById("searchBox").value.toLowerCase();
+            const filtered = products.filter(p =>
+                p.name.toLowerCase().includes(query) ||
+                p.category.toLowerCase().includes(query) ||
+                p.color.toLowerCase().includes(query) ||
+                p.size.toLowerCase().includes(query)
+            );
+            displayProducts(filtered);
+        }
+
+        function clearFields() {
+            document.querySelectorAll(".form-container input").forEach(input => input.value = "");
+        }
+
+        displayProducts();
+    </script>
 </body>
+
 </html>
